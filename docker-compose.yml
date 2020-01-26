@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  php:
+    build: .docker/php/
+    volumes:
+      - .:/var/vhosts/simplechat
+    ports:
+      - "85:84"
+    links:
+      - redis
+  nginx:
+    build: .docker/nginx/
+    ports:
+      - "81:80"
+      - "83:82"
+    links:
+      - php
+    volumes:
+      - .:/var/vhosts/simplechat
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data/redis:/data
+    command: redis-server --appendonly yes

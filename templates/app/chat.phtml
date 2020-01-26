@@ -1,0 +1,183 @@
+<?php
+//$this->headLink()->appendStylesheet('/assets/css/style.css');
+?>
+
+<div class="container-id">
+    <?php print "Room No: " ?>
+</div>
+
+<div id="messages">
+</div>
+
+<div id="send-message-form" action="" method="post">
+    <input class="nickname" name="nickname" placeholder="nickname..."
+           value="<?php echo $nickname ?>"/>
+    <input autocomplete="off" id="message" class="message" name="message"
+           placeholder="Type your message..."/>
+    <input onclick="sendMsg()" id="submit" type="button" name="submit"
+           value="Send">
+</div>
+
+<style>
+    html {
+        height: 100%;
+    }
+
+    body {
+        min-height: 100%;
+    }
+
+    body {
+        margin: 0 0 20px 0;
+        width: 100%;
+        line-height: 1;
+        box-sizing: border-box;
+        font-family: sans-serif;
+        font-size: 14px;
+        overflow: hidden;
+    }
+
+    body * {
+        margin: 0;
+        padding: 0;
+    }
+
+    .container-id {
+        height: 50px;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        font-weight: bold;
+        text-align: center;
+        font-size: 20px;
+        background: gray;
+        color: #fff;
+        line-height: 50px;
+    }
+
+    #messages {
+        width: 100%;
+        border: 1px solid #000;
+        height: calc(100% - 100px);
+        top: 50px;
+        margin-bottom: 100px;
+        background: #ddd;
+        position: fixed;
+        overflow-y: auto;
+    }
+
+    #messages p {
+        line-height: 1.5;
+        border-bottom: 1px solid #E1E1E1;
+    }
+
+    #send-message-form {
+        height: 50px;
+        position: fixed;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+    }
+
+    .nickname {
+        position: fixed;
+        z-index: 4;
+        top: 2px;
+        right: 3px;
+        height: 42px;
+        border: 0;
+        width: 180px;
+        font-size: 1.5em;
+        padding: 2px 10px;
+        background: #6B6B6B;
+        border-radius: 5px;
+        color: #DDD;
+    }
+
+    .message {
+        width: 100%;
+        padding: 0 200px 0 20px;
+        height: 50px;
+        background: #f7f7f7;
+        border: 1px solid #000;
+        font-size: 2em;
+    }
+
+    #submit {
+        position: absolute;
+        right: 0;
+        top: 0;
+        cursor: pointer;
+        border: 0;
+        width: 200px;
+        height: 100%;
+        background: #006603;
+        color: #fff;
+        text-align: center;
+        text-transform: uppercase;
+    }
+</style>
+
+<script>
+
+    const chatId = 1;
+
+    let userId;
+
+    // Определяем userId
+    if (localStorage.getItem('userId') != null) {
+        userId = localStorage.getItem('userId');
+    } else {
+        userId = (+new Date).toString(36);
+        localStorage.setItem('userId', userId);
+    }
+
+    // СОздаем подключение
+    var conn = new WebSocket('ws://localhost:85');
+    conn.onopen = function (e) {
+        console.log("Connection established!");
+
+        let data = {
+            'chatId': chatId,
+            'action': 'connection',
+            'userId': localStorage.getItem('userId'),
+        };
+
+        conn.send(JSON.stringify(data));
+    };
+
+    // При получении сообщения добавляем его в список
+    conn.onmessage = function (e) {
+        console.log('Пришло сообщение: ' + e.data);
+        let messages = JSON.parse(e.data);
+
+        for (let i in messages) {
+            let msg = messages[i];
+
+            let messBlock = document.getElementById('messages');
+            let pNode = document.createElement('p');
+            pNode.innerHTML = msg.time + '<b> ' + msg.user + ' </b>: ' + msg.message;
+
+            messBlock.append(pNode);
+        }
+    };
+
+    function sendMsg() {
+        let msgField = document.getElementById('message'),
+            msg = msgField.value,
+            msgObj = {
+                'chatId': chatId,
+                'userId': localStorage.getItem('userId'),
+                'action': 'message',
+                'message': msg,
+            };
+
+        console.log(msgObj);
+
+        conn.send(JSON.stringify(msgObj));
+
+
+        msgField.value = '';
+    }
+
+</script>

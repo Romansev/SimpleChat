@@ -1,0 +1,7 @@
+/.idea/
+/clover.xml
+/coveralls-upload.json
+/phpunit.xml
+/vendor/
+/data/redis/
+/data/cache/
