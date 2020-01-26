@@ -15,7 +15,6 @@ class Message extends AbstractAction
         ];
 
         $result = $this->chat->predis->lpush('chat:'.$messageHandler->getChatId(), [json_encode($msgData)]);
-        echo $result;
         if ($result > 0) {
             $response = [$msgData];
         }
